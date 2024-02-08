@@ -1,7 +1,8 @@
-import { dockerRestartByIndex, dockerPs, dockerKillByIndex } from './docker'
+import { composeStart, dockerKillWithImageRemove, dockerRestartByIndex, dockerPs, dockerKillByIndex, showDockerImages } from './docker'
 import { get, req } from './request'
 const args = process.argv;
 const exit = process.exit
+
 if (args) {
 	const second = args[2]
 	const third = args[3]
@@ -16,7 +17,9 @@ if (args) {
 		exit()
 	}
 	if (second === "docker") {
-
+		if (third === 'compose-start') {
+			await composeStart(args[4])
+		}
 		if (third === "ps") {
 			await dockerPs();
 			exit()
@@ -24,6 +27,16 @@ if (args) {
 		if (third === "kill") {
 			const idx = args[4];
 			await dockerKillByIndex(idx);
+			exit()
+		}
+		if (third === 'images') {
+
+			await showDockerImages()
+			exit()
+		}
+		if (third === 'fkill') {
+			const idx = args[4]
+			await dockerKillWithImageRemove(idx)
 			exit()
 		}
 		if (third === "restart") {

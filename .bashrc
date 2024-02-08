@@ -19,12 +19,21 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 . "$HOME/.cargo/env"
 
 
-alias ll="ls -lahs"
+alias l="ls -lahs --color=auto"
 alias h='hx ${1}'
 alias c='clear'
+echo  ${1}
+#docker
+#docker rm -f $(docker ps -a -q) ; docker rmi $(docker images -a -q) ; docker compose up --force-recreate --build
+
+alias psp='docker system prune -a'
+alias dim='bun ~/.config/automation/auto.ts docker images'
+alias dcs='bun ~/.config/automation/auto.ts docker compose-start ${1}'
 alias dps='bun  ~/.config/automation/auto.ts docker ps'
 alias dkill='bun  ~/.config/automation/auto.ts docker kill ${1}'
+alias dfkill='bun ~/.config/automation/auto.ts docker fkill ${1}'
 alias dres='bun  ~/.config/automation/auto.ts docker restart ${1}'
+#requests
 alias get='bun  ~/.config/automation/auto.ts get ${1}'
 alias post='bun  ~/.config/automation/auto.ts post ${1} ${2} ${3}'
 alias put='bun  ~/.config/automation/auto.ts put ${1} ${2} ${3}'
