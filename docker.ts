@@ -1,4 +1,3 @@
-
 const colNames = ["hash", "status", "ports", "name"];
 function getCurrentContainerList(text: string, colNames: string[]) {
 	const splitted = text
@@ -29,14 +28,13 @@ function getCurrentContainerList(text: string, colNames: string[]) {
 }
 
 async function getCurrentImageList() {
-
 	const { stdout, stderr } = await Bun.spawn(["docker", "images"]);
 	const res = await new Response(stdout).text();
 	const err = await new Response(stderr).text();
 	if (err) {
 		console.log("Error: ", err);
 	}
-	const colNames = ['name', 'tag', 'id', 'created', 'size']
+	const colNames = ["name", "tag", "id", "created", "size"];
 
 	const splitted = res
 		.split("\n")
@@ -58,14 +56,12 @@ async function getCurrentImageList() {
 	return result;
 }
 
-
 export async function showDockerImages() {
-	const res = await getCurrentImageList()
+	const res = await getCurrentImageList();
 	if (res) {
 		console.table(res);
 	}
 }
-
 
 export async function dockerPs() {
 	const { stdout, stderr } = await Bun.spawn(["docker", "ps"]);
@@ -81,7 +77,6 @@ export async function dockerPs() {
 }
 
 export async function dockerKillWithImageRemove(i: string) {
-
 	const { stdout, stderr } = await Bun.spawn(["docker", "ps"]);
 	const res = await new Response(stdout).text();
 	const err = await new Response(stderr).text();
@@ -91,30 +86,36 @@ export async function dockerKillWithImageRemove(i: string) {
 
 	if (res) {
 		const list = getCurrentContainerList(res, colNames);
-		const candidat = list[+i] as any;
+		const candidat = list[+i] as { hash: string };
 		if (candidat) {
 			const hash = candidat.hash;
-			const { stdout, stderr } = await Bun.spawn(['docker', 'inspect', `--format='{{index .Config.Image }}`, hash])
-
+			const { stdout, stderr } = await Bun.spawn([
+				"docker",
+				"inspect",
+				`--format='{{index .Config.Image }}`,
+				hash,
+			]);
 
 			const res = await new Response(stdout).text();
 			const err = await new Response(stderr).text();
 			if (err) {
 				console.log("Error while image inspecting: ", err);
 			}
-			let name = ''
+			let name = "";
 			if (res) {
-				name = res.includes(":") ? res.split(':')?.[0] : res
-				name = name.replaceAll("'", '')
-				const list = await getCurrentImageList() as { name: string, id: string }[]
-				const candidat = list.find((c => {
-					return c.name.trim() === name.trim()
-				}))
+				name = res.includes(":") ? res.split(":")?.[0] : res;
+				name = name.replaceAll("'", "");
+				const list = (await getCurrentImageList()) as {
+					name: string;
+					id: string;
+				}[];
+				const candidat = list.find((c) => {
+					return c.name.trim() === name.trim();
+				});
 				if (candidat) {
-					name = candidat.id
+					name = candidat.id;
 				}
 			}
-
 
 			if (hash) {
 				const { stdout, stderr } = await Bun.spawn(["docker", "kill", hash]);
@@ -122,13 +123,12 @@ export async function dockerKillWithImageRemove(i: string) {
 				const res = await new Response(stdout).text();
 				const err = await new Response(stderr).text();
 				if (err) {
-					console.log('Error while removing container')
+					console.log("Error while removing container");
 				}
 			}
 			if (name) {
-				await Bun.spawn(['docker', 'rmi', '-f', name])
+				await Bun.spawn(["docker", "rmi", "-f", name]);
 			}
-
 		}
 	}
 }
@@ -142,7 +142,7 @@ export async function dockerKillByIndex(i: string) {
 
 	if (res) {
 		const list = getCurrentContainerList(res, colNames);
-		const candidat = list[+i] as any;
+		const candidat = list[+i] as { hash: string };
 		if (candidat) {
 			const hash = candidat.hash;
 			if (hash) {
@@ -152,7 +152,6 @@ export async function dockerKillByIndex(i: string) {
 	}
 }
 export async function dockerRestartByIndex(i: string) {
-
 	const { stdout, stderr } = await Bun.spawn(["docker", "ps"]);
 	const res = await new Response(stdout).text();
 	const err = await new Response(stderr).text();
@@ -161,9 +160,8 @@ export async function dockerRestartByIndex(i: string) {
 	}
 
 	if (res) {
-
 		const list = getCurrentContainerList(res, colNames);
-		const candidat = list[+i] as any;
+		const candidat = list[+i] as { hash: string };
 		if (candidat) {
 			const hash = candidat.hash;
 			if (hash) {
@@ -172,9 +170,15 @@ export async function dockerRestartByIndex(i: string) {
 		}
 	}
 }
-export async function composeStart(filename:string){
-	
-	const { stdout, stderr } = await Bun.spawn(["docker", "compose",'-f',filename, 'up','-d']);
+export async function composeStart(filename: string) {
+	const { stdout, stderr } = await Bun.spawn([
+		"docker",
+		"compose",
+		"-f",
+		filename,
+		"up",
+		"-d",
+	]);
 	const res = await new Response(stdout).text();
 	const err = await new Response(stderr).text();
 	if (err) {
@@ -182,8 +186,39 @@ export async function composeStart(filename:string){
 	}
 
 	if (res) {
-		console.log(res)
-		console.log('Compose started')
-		await dockerPs()
+		console.log(res);
+		console.log("Compose started");
+		await dockerPs();
+	}
+}
+export async function composeLog(filename: string) {
+	const proc = await Bun.spawn(["docker", "compose", "-f", filename, "logs"], {
+		stdout: "inherit",
+	});
+	const err = await new Response(proc.stderr).text();
+
+	if (err) {
+		console.log("Error: ", err);
+	}
+}
+
+export async function composeDown(filename: string) {
+	const { stdout, stderr } = await Bun.spawn([
+		"docker",
+		"compose",
+		"-f",
+		filename,
+		"down",
+	]);
+	const res = await new Response(stdout).text();
+	const err = await new Response(stderr).text();
+	if (err) {
+		console.log("Error: ", err);
+	}
+
+	if (res) {
+		console.log(res);
+		console.log("Compose started");
+		await dockerPs();
 	}
 }

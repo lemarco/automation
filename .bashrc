@@ -1,16 +1,6 @@
 #!/bin/bash
 
 PROMPT_COMMAND='PS1_CMD1=$(git branch 2>/dev/null | grep '"'"'*'"'"' | colrm 1 2)'; PS1='\[\e[2m\]\d\[\e[0m\]|\[\e[2m\]\t\[\e[0m\]| git:${PS1_CMD1}| dir:\W\[\e[5m\]:\[\e[0m\] '
-executable="bun"
-if ! command -v "$executable" &>/dev/null; then
-    echo "Executable 'bun' not found. Do you want to install it? (y/n)"
-    read -r install_choice
-    if [[ $install_choice =~ ^[Yy]$ ]]; then
-        echo "Installing 'bun'..."
-        # Run the installation command using curl
-        curl -fsSL https://bun.sh/install | bash
-    fi
-fi
 
 export BUN_INSTALL="$HOME/.bun"
 export PATH=$BUN_INSTALL/bin:$PATH
@@ -29,6 +19,8 @@ echo  ${1}
 alias psp='docker system prune -a'
 alias dim='bun ~/.config/automation/auto.ts docker images'
 alias dcs='bun ~/.config/automation/auto.ts docker compose-start ${1}'
+alias dcd='bun ~/.config/automation/auto.ts docker compose-down ${1}'
+alias dcl='bun ~/.config/automation/auto.ts docker compose-logs ${1}'
 alias dps='bun  ~/.config/automation/auto.ts docker ps'
 alias dkill='bun  ~/.config/automation/auto.ts docker kill ${1}'
 alias dfkill='bun ~/.config/automation/auto.ts docker fkill ${1}'
