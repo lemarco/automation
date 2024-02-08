@@ -8,9 +8,9 @@ import {
 	dockerRestartByIndex,
 	showDockerImages,
 } from "./docker";
+import { exit } from "./docker/utils";
 import { get, req } from "./request";
 const args = process.argv;
-const exit = process.exit;
 
 if (args) {
 	const second = args[2];
